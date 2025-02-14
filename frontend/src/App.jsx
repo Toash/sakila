@@ -1,26 +1,39 @@
-import axios from "axios";
-import { useEffect } from "react";
 import "./App.css";
-import { AppBar, Button, Toolbar, Typography, Box } from "@mui/material";
-import { Films } from "./films/Films";
+import {
+  Button,
+  AppBar,
+  Toolbar,
+  Typography,
+  ThemeProvider,
+  createTheme,
+} from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Link, Outlet, redirect } from "react-router";
 
 const queryClient = new QueryClient();
 
 function App() {
   // call the api for top 5 movies on mount
-
+  const darkTheme = createTheme({
+    palette: {
+      mode: "dark",
+      primary: {
+        main: "#1976d2",
+      },
+    },
+  });
   return (
     <QueryClientProvider client={queryClient}>
-      <AppBar>
-        <Toolbar>
-          <Typography>Milestone 2</Typography>
-        </Toolbar>
-      </AppBar>
-      <Box>
-        <Typography>Top 5 Films</Typography>
-        <Films></Films>
-      </Box>
+      <ThemeProvider theme={darkTheme}>
+        <AppBar>
+          <Toolbar>
+            <Button component={Link} to="/" variant="contained">
+              Home
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <Outlet />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

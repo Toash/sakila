@@ -4,7 +4,8 @@ import {
   getActor,
   createActor,
   getTop5RentedFilms,
-  getFilmDetails,
+  getFilmFromTitle,
+  getFilmFromId,
 } from "./database.js";
 import cors from "cors";
 
@@ -20,10 +21,15 @@ app.get("/films/top5", async (req, res) => {
   res.send(films);
 });
 
-// spaces can be represented by %20
-app.get("/films/:title", async (req, res) => {
+app.get("/films/id/:id", async (req, res) => {
+  const id = req.params.id;
+  const film = await getFilmFromId(id);
+  res.send(film);
+});
+// why can we get with both title and id? bceause i dont know how to get id from top 5. ( it is grouped by title)
+app.get("/films/title/:title", async (req, res) => {
   const title = req.params.title;
-  const film = await getFilmDetails(title);
+  const film = await getFilmFromTitle(title);
   res.send(film);
 });
 

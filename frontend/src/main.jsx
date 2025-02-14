@@ -8,6 +8,9 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import { ErrorBoundary } from "react-error-boundary";
 import { Typography } from "@mui/material";
+import { BrowserRouter, Routes, Route } from "react-router";
+import { FilmPage } from "./pages/FilmPage.jsx";
+import Top5FilmPage from "./pages/Top5FilmPage.jsx";
 
 function Fallback({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
@@ -29,7 +32,18 @@ createRoot(document.getElementById("root")).render(
         // Reset the state of your app so the error doesn't happen again
       }}
     >
-      <App />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />}>
+            <Route index element={<Top5FilmPage />}></Route>
+            <Route
+              index
+              path="/film/title/:title"
+              element={<FilmPage />}
+            ></Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </ErrorBoundary>
   </StrictMode>
 );
