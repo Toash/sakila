@@ -2,8 +2,9 @@ import { Box, Typography, CircularProgress } from "@mui/material";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { FilmCard } from "../films/FilmCard";
-import { ActorCard } from "../films/ActorCard";
+import { FilmCard } from "../cards/FilmCard";
+import { ActorCard } from "../cards/ActorCard";
+
 const api = axios.create({
   baseURL: "http://localhost:3000",
 });
@@ -28,7 +29,13 @@ const Films = () => {
   }
 
   return (
-    <Box display="flex" flexWrap="wrap" gap="2rem" justifyContent={"center"}>
+    <Box
+      width="100%"
+      display="flex"
+      flexWrap="wrap"
+      gap="2rem"
+      justifyContent={"center"}
+    >
       {data?.map((film, i) => {
         return <FilmCard key={i} data={film}></FilmCard>;
       })}
@@ -57,15 +64,30 @@ const Actors = () => {
 
 function LandingPage() {
   return (
-    <Box mt="4rem" display="flex" flexDirection="column" gap="2rem">
-      <Typography variant="h1" fontSize={"4rem"} fontWeight={"bold"}>
-        Top 5 Films
-      </Typography>
-      <Films></Films>
-      <Typography variant="h1" fontSize={"4rem"} fontWeight={"bold"}>
-        Top 5 Actors
-      </Typography>
-      <Actors></Actors>
+    <Box mt="6rem" display="flex" flexDirection="column" gap="4rem">
+      <Box display="flex" flexDirection="column" gap="2rem">
+        <Typography
+          textAlign="center"
+          variant="h1"
+          fontSize={"4rem"}
+          fontWeight={"bold"}
+        >
+          Top 5 Films
+        </Typography>
+        <Films></Films>
+      </Box>
+
+      <Box display="flex" flexDirection="column" gap="2rem">
+        <Typography
+          textAlign="center"
+          variant="h1"
+          fontSize={"4rem"}
+          fontWeight={"bold"}
+        >
+          Top 5 Actors
+        </Typography>
+        <Actors></Actors>
+      </Box>
     </Box>
   );
 }

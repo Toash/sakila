@@ -51,21 +51,29 @@ export const ActorPage = () => {
       sx={{
         display: "flex",
         flexDirection: "row",
-        justifyContent: "space-between",
-        mt: "4rem",
+        justifyContent: "center",
+        gap: "6rem",
+        mt: "6rem",
       }}
     >
       <Box display={"flex"} flexDirection={"column"} gap="2rem">
-        <Typography variant="h1" fontWeight={"bold"}>
-          {data.first_name} {data.last_name}
-        </Typography>
+        <Box>
+          <Typography variant="h1" fontWeight={"bold"}>
+            {data.first_name} {data.last_name}
+          </Typography>
 
-        <Typography textAlign={"left"} fontSize={"2rem"} fontWeight={"bold"}>
-          - Film count: {film_count.film_count}
-        </Typography>
+          <Typography textAlign={"left"} fontSize={"2rem"} fontWeight={"bold"}>
+            - Film count: {film_count.film_count}
+          </Typography>
+        </Box>
 
         <Box>
-          <Typography textAlign="left" variant="h2" fontWeight={"bold"}>
+          <Typography
+            mb="1rem"
+            textAlign="left"
+            variant="h2"
+            fontWeight={"bold"}
+          >
             Top 5 films
           </Typography>
           {films.map((e, i) => {
@@ -82,7 +90,7 @@ export const ActorPage = () => {
         src={simpleSvgPlaceholder({
           text: data.first_name,
           height: 800,
-          width: 500,
+          width: 600,
         })}
       />
     </Box>

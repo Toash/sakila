@@ -8,13 +8,21 @@ import {
 import { useNavigate } from "react-router";
 
 import simpleSvgPlaceholder from "@cloudfour/simple-svg-placeholder";
+import HoverCard from "./HoverCard";
 
 export const ActorCard = ({ data }) => {
   let navigate = useNavigate();
   return (
-    <Card sx={{ backgroundColor: "#1E1E1E", minWidth: 275 }}>
+    <HoverCard
+      onClick={() => navigate("/actor/id/" + encodeURIComponent(data.actor_id))}
+      sx={{ cursor: "pointer", backgroundColor: "#1E1E1E", minWidth: 275 }}
+    >
       <CardContent>
-        <Typography sx={{ color: "white" }}>
+        <Typography
+          fontSize="1.5rem"
+          textAlign="center"
+          sx={{ color: "white" }}
+        >
           {data.first_name} {data.last_name}
         </Typography>
         <img
@@ -27,16 +35,6 @@ export const ActorCard = ({ data }) => {
           })}
         ></img>
       </CardContent>
-      <CardActions>
-        <Button
-          size="small"
-          onClick={() => {
-            navigate("/actor/id/" + encodeURIComponent(data.actor_id));
-          }}
-        >
-          Details
-        </Button>
-      </CardActions>
-    </Card>
+    </HoverCard>
   );
 };

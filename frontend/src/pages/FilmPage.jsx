@@ -37,7 +37,14 @@ export const FilmPage = () => {
 
   return (
     <Box
-      sx={{ display: "flex", flexDirection: "column", gap: "2rem", mt: "4rem" }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "2rem",
+        mt: "6rem",
+      }}
     >
       <Typography variant="h1" fontWeight={"bold"}>
         {data.title}
@@ -45,6 +52,7 @@ export const FilmPage = () => {
       <Typography sx={{ fontSize: "2rem" }}>- {data.description}</Typography>
 
       <img
+        width={"80%"}
         src={simpleSvgPlaceholder({
           text: data.title,
           bgColor: placeHolderBG,

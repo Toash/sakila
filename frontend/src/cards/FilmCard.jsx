@@ -8,13 +8,23 @@ import {
 import { useNavigate } from "react-router";
 import simpleSvgPlaceholder from "@cloudfour/simple-svg-placeholder";
 import randomColor from "randomcolor";
+import HoverCard from "./HoverCard";
 
 export const FilmCard = ({ data }) => {
   let navigate = useNavigate();
   return (
-    <Card sx={{ backgroundColor: "#1E1E1E", minWidth: 275 }}>
+    <HoverCard
+      onClick={() => navigate("/film/title/" + encodeURIComponent(data.title))}
+      sx={{ cursor: "pointer", backgroundColor: "#1E1E1E", minWidth: 275 }}
+    >
       <CardContent>
-        <Typography sx={{ color: "white" }}>{data.title}</Typography>
+        <Typography
+          fontSize="1.5rem"
+          textAlign="center"
+          sx={{ color: "white" }}
+        >
+          {data.title}
+        </Typography>
         <img
           src={simpleSvgPlaceholder({
             //bgColor: randomColor(),
@@ -25,16 +35,6 @@ export const FilmCard = ({ data }) => {
           })}
         ></img>
       </CardContent>
-      <CardActions>
-        <Button
-          size="small"
-          onClick={() => {
-            navigate("/film/title/" + encodeURIComponent(data.title));
-          }}
-        >
-          Details
-        </Button>
-      </CardActions>
-    </Card>
+    </HoverCard>
   );
 };
