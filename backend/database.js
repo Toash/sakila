@@ -97,9 +97,29 @@ export async function getFilmFromTitle(title) {
   return rows[0];
 }
 
-export async function getTop5ActorsForFilm(id) {}
+// actors with most film count.
+export async function getTop5Actors() {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      actor.actor_id,
+      actor.first_name,
+      actor.last_name,
+      COUNT(*) AS film_count
+    FROM 
+      actor
+    JOIN
+      film_actor ON actor.actor_id = film_actor.actor_id
+    GROUP BY
+      actor.actor_id
+    ORDER BY
+      film_count DESC
+    LIMIT 5;
+    `
+  );
+  return rows;
+}
 
-// below for reference
 export async function getActor(id) {
   // dont use ${id} to prevent sql injection attack
   //prepared statement
@@ -111,6 +131,49 @@ export async function getActor(id) {
     [id]
   );
   return rows[0];
+}
+
+export async function getActorFilmCount(id) {
+  const [rows] = await pool.query(
+    `
+    SELECT  
+      COUNT(*) as film_count
+    FROM 
+      actor
+    JOIN
+      film_actor ON actor.actor_id = film_actor.actor_id
+    WHERE actor.actor_id = ?`,
+    [id]
+  );
+  return rows[0];
+}
+
+// is this even correct?
+export async function getTop5FilmsFromActor(id) {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      film.title,
+      COUNT(*) as film_count
+    FROM
+      actor
+    JOIN
+      film_actor ON actor.actor_id = film_actor.actor_id
+    JOIN
+      film ON film.film_id = film_actor.film_id
+    JOIN
+      inventory ON film_actor.film_id = inventory.film_id
+    JOIN 
+      rental ON inventory.inventory_id = rental.inventory_id
+    WHERE 
+      actor.actor_id = ?
+    GROUP BY film.title
+    ORDER BY film_count DESC
+    LIMIT 5
+    `,
+    [id]
+  );
+  return rows;
 }
 
 export async function getActors() {
@@ -129,7 +192,3 @@ export async function createActor(first_name, last_name) {
   const id = result.insertId;
   return getActor(id);
 }
-
-// Bob faucet
-const actor = await getActor(19);
-console.log(actor);

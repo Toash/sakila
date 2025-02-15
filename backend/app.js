@@ -6,6 +6,9 @@ import {
   getTop5RentedFilms,
   getFilmFromTitle,
   getFilmFromId,
+  getTop5Actors,
+  getActorFilmCount,
+  getTop5FilmsFromActor,
 } from "./database.js";
 import cors from "cors";
 
@@ -18,6 +21,7 @@ app.use(express.json());
 
 app.get("/films/top5", async (req, res) => {
   const films = await getTop5RentedFilms();
+  console.log("test");
   res.send(films);
 });
 
@@ -39,10 +43,27 @@ app.get("/actors", async (req, res) => {
   res.send(actors);
 });
 
-app.get("/actors/:id", async (req, res) => {
+app.get("/actors/film_count/id/:id", async (req, res) => {
+  const id = req.params.id;
+  const film_count = await getActorFilmCount(id);
+  res.send(film_count);
+});
+
+app.get("/actors/id/:id", async (req, res) => {
   const id = req.params.id;
   const actor = await getActor(id);
   res.send(actor);
+});
+
+app.get("/actors/top5", async (req, res) => {
+  const actors = await getTop5Actors();
+  res.send(actors);
+});
+
+app.get("/actors/top5films/id/:id", async (req, res) => {
+  const id = req.params.id;
+  const films = await getTop5FilmsFromActor(id);
+  res.send(films);
 });
 
 app.post("/actors", async (req, res) => {

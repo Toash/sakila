@@ -9,7 +9,7 @@ import { useNavigate } from "react-router";
 import simpleSvgPlaceholder from "@cloudfour/simple-svg-placeholder";
 import randomColor from "randomcolor";
 
-export const Film = ({ data }) => {
+export const FilmCard = ({ data }) => {
   let navigate = useNavigate();
   return (
     <Card sx={{ backgroundColor: "#1E1E1E", minWidth: 275 }}>
@@ -17,9 +17,11 @@ export const Film = ({ data }) => {
         <Typography sx={{ color: "white" }}>{data.title}</Typography>
         <img
           src={simpleSvgPlaceholder({
-            bgColor: randomColor(),
-            textColor: randomColor(),
+            //bgColor: randomColor(),
+            //textColor: randomColor(),
+            height: 400,
             text: data.title,
+            fontSize: "1.5rem",
           })}
         ></img>
       </CardContent>

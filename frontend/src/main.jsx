@@ -10,7 +10,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Typography } from "@mui/material";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { FilmPage } from "./pages/FilmPage.jsx";
-import Top5FilmPage from "./pages/Top5FilmPage.jsx";
+import LandingPage from "./pages/LandingPage.jsx";
+import { ActorPage } from "./pages/ActorPage.jsx";
 
 function Fallback({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
@@ -35,12 +36,13 @@ createRoot(document.getElementById("root")).render(
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>
-            <Route index element={<Top5FilmPage />}></Route>
+            <Route index element={<LandingPage />}></Route>
             <Route
               index
               path="/film/title/:title"
               element={<FilmPage />}
             ></Route>
+            <Route index path="/actor/id/:id" element={<ActorPage />}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

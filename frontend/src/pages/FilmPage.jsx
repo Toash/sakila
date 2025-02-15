@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Typography, Box, CircularProgress } from "@mui/material";
 import { useParams } from "react-router";
 import axios from "axios";
@@ -10,6 +11,16 @@ const api = axios.create({
 });
 
 export const FilmPage = () => {
+  const [placeHolderBG, setPlaceHolderBG] = useState(randomColor());
+  const [placeHolderText, setPlaceHolderText] = useState(randomColor());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceHolderBG(randomColor());
+      setPlaceHolderText(randomColor());
+    }, 700);
+
+    return () => clearInterval(interval); // cleanup function
+  }, []);
   let { title } = useParams();
   const getFilmFromTitle = async () => {
     const response = await api.get("/films/title/" + encodeURIComponent(title));
@@ -23,6 +34,7 @@ export const FilmPage = () => {
   if (isLoading) {
     return <CircularProgress></CircularProgress>;
   }
+
   return (
     <Box
       sx={{ display: "flex", flexDirection: "column", gap: "2rem", mt: "4rem" }}
@@ -33,12 +45,10 @@ export const FilmPage = () => {
       <Typography sx={{ fontSize: "2rem" }}>- {data.description}</Typography>
 
       <img
-        width={"100%"}
-        height={"auto"}
         src={simpleSvgPlaceholder({
           text: data.title,
-          bgColor: randomColor(),
-          textColor: randomColor(),
+          bgColor: placeHolderBG,
+          textColor: placeHolderText,
         })}
       ></img>
 
