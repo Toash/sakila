@@ -13,13 +13,17 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Paper,
+  TableFooter,
+  TablePagination,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
 import { useNavigate, useSearchParams } from "react-router";
+import { DataGrid } from "@mui/x-data-grid";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_backend,
@@ -61,6 +65,12 @@ function FilmsPage() {
 
   const updateQueryParams = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString()); // Create a copy
+    if (
+      newSearchParams.get("search") === submittedSearch &&
+      newSearchParams.get("searchBy") === searchBy
+    ) {
+      return;
+    }
     newSearchParams.set("search", submittedSearch);
     newSearchParams.set("searchBy", searchBy);
     navigate(`?${newSearchParams.toString()}`); // Update URL
@@ -94,21 +104,39 @@ function FilmsPage() {
   });
 
   function FilmTable() {
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    const handleChangePage = (event, newPage) => {
+      setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+      setRowsPerPage(parseInt(event.target.value, 10));
+      setPage(0);
+    };
+
     return (
-      <>
+      <Box width="90%">
         <TableContainer>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Title</TableCell>
                 <TableCell>Release Year</TableCell>
-                <TableCell>Length</TableCell>
+                <TableCell>Length (Minutes)</TableCell>
                 <TableCell>Rating</TableCell>
                 <TableCell>Details</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {data?.map((e, i) => {
+              {(rowsPerPage > 0
+                ? data?.slice(
+                    page * rowsPerPage,
+                    page * rowsPerPage + rowsPerPage
+                  )
+                : data
+              )?.map((e, i) => {
                 return (
                   <TableRow key={i}>
                     <TableCell>{e.title}</TableCell>
@@ -129,25 +157,50 @@ function FilmsPage() {
                 );
               })}
             </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                  count={data?.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                ></TablePagination>
+              </TableRow>
+            </TableFooter>
           </Table>
         </TableContainer>
-      </>
+      </Box>
     );
   }
 
   return (
-    <Box mt="6rem" display="flex" flexDirection="column" gap="4rem">
+    <Box
+      mt="6rem"
+      display="flex"
+      flexDirection="column"
+      gap="4rem"
+      alignItems={"center"}
+    >
       <Typography textAlign="center" fontWeight="bold" variant="h1">
         Films page
       </Typography>
 
-      <Box id="search" display="flex" justifyContent={"center"}>
+      <Box width="100%" id="search" display="flex" justifyContent={"center"}>
         <Box width="80%" display="flex">
           <TextField
             label="Search"
             sx={{ flex: "1" }}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                setSubmittedSearch(search);
+              }
+            }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
           ></TextField>
           <FormControl sx={{ minWidth: "300px" }}>
             <InputLabel labelId="option-label">Search By</InputLabel>

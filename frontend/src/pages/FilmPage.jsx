@@ -44,12 +44,15 @@ export const FilmPage = () => {
         alignItems: "center",
         gap: "2rem",
         mt: "6rem",
+
+        mr: "2rem",
+        ml: "2rem",
       }}
     >
       <Typography variant="h1" fontWeight={"bold"}>
         {data.title}
       </Typography>
-      <Typography sx={{ fontSize: "2rem" }}>- {data.description}</Typography>
+      <Typography sx={{ fontSize: "1.5rem" }}>- {data.description}</Typography>
 
       <img
         width={"80%"}
@@ -60,10 +63,16 @@ export const FilmPage = () => {
         })}
       ></img>
 
-      <Typography>Release year: {data.release_year}</Typography>
-      <Typography>Length: {data.length} Minutes</Typography>
-      <Typography>Replacement Cost: {data.replacement_cost}</Typography>
-      <Typography>Rating: {data.rating}</Typography>
+      <Typography sx={{ fontSize: "1.5rem" }}>
+        Release year: {data.release_year}
+      </Typography>
+      <Typography sx={{ fontSize: "1.5rem" }}>
+        Length: {data.length} Minutes
+      </Typography>
+      <Typography sx={{ fontSize: "1.5rem" }}>
+        Replacement Cost: {data.replacement_cost}
+      </Typography>
+      <Typography sx={{ fontSize: "1.5rem" }}>Rating: {data.rating}</Typography>
     </Box>
   );
 };

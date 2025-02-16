@@ -16,6 +16,7 @@
     "@fontsource/roboto": "^5.1.1",
     "@mui/icons-material": "^6.4.4",
     "@mui/material": "^6.4.4",
+    "@mui/x-data-grid": "^7.26.0",
     "@tanstack/react-query": "^5.66.0",
     "axios": "^1.7.9",
     "randomcolor": "^0.6.2",
