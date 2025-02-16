@@ -1,7 +1,183 @@
-import { Typography } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  Button,
+  TableContainer,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
+
+import { useNavigate, useSearchParams } from "react-router";
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_backend,
+});
 
 function FilmsPage() {
-  return <Typography>Films page</Typography>;
+  // get query params
+  const [searchParams] = useSearchParams();
+
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [submittedSearch, setSubmittedSearch] = useState("");
+  const [searchBy, setSearchBy] = useState("film");
+
+  // get the search and searchBy query params on page load.
+  // update states from these query params
+  // these states that are updated will trigger useQuery to fetch the data.
+  useEffect(() => {
+    const initialSearch = searchParams.get("search");
+    const initialSearchBy = searchParams.get("searchBy");
+
+    if (!initialSearch) {
+      return;
+    }
+
+    setSearch(initialSearch);
+    setSubmittedSearch(initialSearch);
+    setSearchBy(initialSearchBy);
+  }, []);
+
+  // useeffect will run when variables in dependency array changes.
+  // state changes are asyncronous so we need to do this
+  // (setSubmittedSearch will not update submittedSearch immediately)
+  useEffect(() => {
+    if (submittedSearch) {
+      updateQueryParams();
+    }
+  }, [submittedSearch]);
+
+  const updateQueryParams = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString()); // Create a copy
+    newSearchParams.set("search", submittedSearch);
+    newSearchParams.set("searchBy", searchBy);
+    navigate(`?${newSearchParams.toString()}`); // Update URL
+  };
+
+  async function searchFilms() {
+    if (submittedSearch.trim() === "") return [];
+
+    let endpoint = "";
+
+    if (searchBy === "film") {
+      endpoint = `/films/search/title/${submittedSearch}`;
+    } else if (searchBy === "actor") {
+      endpoint = `/films/search/title/${submittedSearch}`;
+    } else if (searchBy === "genre") {
+      endpoint = `/films/search/title/${submittedSearch}`;
+    } else {
+      console.error("Wrong search by");
+      return [];
+    }
+
+    const response = await api.get(endpoint);
+    return response.data;
+  }
+
+  const { data, isLoading } = useQuery({
+    // will refetch data when query key changes
+    enabled: !!submittedSearch, // !! converts to bool
+    queryKey: ["film_search", submittedSearch],
+    queryFn: searchFilms,
+  });
+
+  function FilmTable() {
+    return (
+      <>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell>Release Year</TableCell>
+                <TableCell>Length</TableCell>
+                <TableCell>Rating</TableCell>
+                <TableCell>Details</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data?.map((e, i) => {
+                return (
+                  <TableRow key={i}>
+                    <TableCell>{e.title}</TableCell>
+                    <TableCell>{e.release_year}</TableCell>
+                    <TableCell>{e.length}</TableCell>
+                    <TableCell>{e.rating}</TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() =>
+                          navigate("/film/title/" + encodeURIComponent(e.title))
+                        }
+                        variant="outlined"
+                      >
+                        See Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </>
+    );
+  }
+
+  return (
+    <Box mt="6rem" display="flex" flexDirection="column" gap="4rem">
+      <Typography textAlign="center" fontWeight="bold" variant="h1">
+        Films page
+      </Typography>
+
+      <Box id="search" display="flex" justifyContent={"center"}>
+        <Box width="80%" display="flex">
+          <TextField
+            label="Search"
+            sx={{ flex: "1" }}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          ></TextField>
+          <FormControl sx={{ minWidth: "300px" }}>
+            <InputLabel labelId="option-label">Search By</InputLabel>
+            <Select
+              value={searchBy}
+              onChange={(e) => {
+                setSearchBy(e.target.value);
+              }}
+              label="option"
+              labelId="option-label"
+            >
+              <MenuItem value="film">Film</MenuItem>
+              <MenuItem value="actor">Actor</MenuItem>
+              <MenuItem value="genre">Genre</MenuItem>
+            </Select>
+          </FormControl>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setSubmittedSearch(search);
+            }}
+          >
+            Search
+          </Button>
+        </Box>
+      </Box>
+
+      <FilmTable></FilmTable>
+    </Box>
+  );
 }
 
 export default FilmsPage;

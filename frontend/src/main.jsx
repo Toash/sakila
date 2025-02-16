@@ -5,37 +5,33 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import { ErrorBoundary } from "react-error-boundary";
-import { Typography } from "@mui/material";
+
 import { BrowserRouter, Routes, Route } from "react-router";
 import { FilmPage } from "./pages/FilmPage.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import { ActorPage } from "./pages/ActorPage.jsx";
+import FilmsPage from "./pages/FilmsPage.jsx";
 
-function Fallback({ error, resetErrorBoundary }) {
-  // Call resetErrorBoundary() to reset the error boundary and retry the render.
+import { ErrorBoundary } from "react-error-boundary";
 
-  return (
-    <div role="alert">
-      <p>Something went wrong :(</p>
-      {/* what */}
-      {console.log(error.message)}
-    </div>
-  );
-}
+const logError = (error, info) => {
+  // Do something with the error, e.g. log to an external API
+  console.log(error);
+};
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <ErrorBoundary
-      FallbackComponent={Fallback}
-      onReset={(details) => {
-        // Reset the state of your app so the error doesn't happen again
-      }}
+      onError={logError}
+      fallback={<div>Something went wrong :(</div>}
     >
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<App />}>
+            {/* main pages */}
             <Route index element={<LandingPage />}></Route>
+            <Route index path="/films" element={<FilmsPage />}></Route>
+            {/* sub pages */}
             <Route
               index
               path="/film/title/:title"

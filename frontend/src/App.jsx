@@ -18,6 +18,7 @@ function App() {
     typography: {
       h1: {
         color: "white",
+        fontSize: "4rem",
       },
     },
     palette: {
@@ -47,7 +48,7 @@ function App() {
             <Button
               sx={{ mr: "1rem" }}
               component={Link}
-              to="/"
+              to="/films"
               variant="contained"
             >
               Films

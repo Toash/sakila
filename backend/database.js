@@ -97,6 +97,37 @@ export async function getFilmFromTitle(title) {
   return rows[0];
 }
 
+export async function fuzzySearchFilmsWithTitle(title) {
+  const search = `%${title}%`;
+  const [rows] = await pool.query(
+    `
+    SELECT 
+      film.film_id,
+      film.title,
+      film.description,
+      film.release_year,
+      film.language_id,
+      film.original_language_id,
+      film.rental_duration,
+      film.rental_rate,
+      film.length,
+      film.replacement_cost,
+      film.rating,
+      film.special_features,
+      film.last_update,
+      LENGTH(film.title) - LENGTH(?) as DIFF
+    FROM 
+      film
+    WHERE 
+      film.title LIKE ?
+    ORDER BY DIFF
+    `,
+    [title, search]
+  );
+
+  return rows;
+}
+
 // actors with most film count.
 export async function getTop5Actors() {
   const [rows] = await pool.query(
