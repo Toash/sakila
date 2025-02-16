@@ -61,7 +61,7 @@ function App() {
                   to="/films"
                   variant="contained"
                 >
-                  Films
+                  SEARCH FILMS
                 </Button>
                 <Button
                   sx={{ mr: "1rem" }}
@@ -69,7 +69,7 @@ function App() {
                   to="/customers"
                   variant="contained"
                 >
-                  Customers
+                  MANAGE CUSTOMERS
                 </Button>
               </Box>
             </Box>
