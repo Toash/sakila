@@ -58,6 +58,7 @@ export const FilmPage = () => {
         width={"80%"}
         src={simpleSvgPlaceholder({
           text: data.title,
+          fontSize: "1rem",
           bgColor: placeHolderBG,
           textColor: placeHolderText,
         })}

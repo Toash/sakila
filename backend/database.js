@@ -115,14 +115,97 @@ export async function fuzzySearchFilmsWithTitle(title) {
       film.rating,
       film.special_features,
       film.last_update,
-      LENGTH(film.title) - LENGTH(?) as DIFF
+      LENGTH(film.title) - LENGTH(?) as DIFF,
+      category.name AS genre
     FROM 
       film
+    JOIN
+      film_category ON film.film_id = film_category.film_id
+    JOIN
+      category ON film_category.category_id = category.category_id
     WHERE 
       film.title LIKE ?
     ORDER BY DIFF
     `,
     [title, search]
+  );
+
+  return rows;
+}
+
+export async function fuzzySearchFilmsWithActor(actor) {
+  const search = `%${actor}%`;
+  const [rows] = await pool.query(
+    `
+    SELECT 
+      film_actor.actor_id,
+      film.film_id,
+      CONCAT(actor.first_name, ' ',actor.last_name) AS actor_name,
+      film.title,
+      film.description,
+      film.release_year,
+      film.language_id,
+      film.original_language_id,
+      film.rental_duration,
+      film.rental_rate,
+      film.length,
+      film.replacement_cost,
+      film.rating,
+      film.special_features,
+      film.last_update,
+      LENGTH(actor.first_name) - LENGTH(?) as DIFF,
+      category.name AS genre
+    FROM 
+      film
+    JOIN
+      film_actor ON film_actor.film_id = film.film_id
+	  JOIN
+		  actor ON actor.actor_id = film_actor.actor_id
+    JOIN
+      film_category ON film.film_id = film_category.film_id
+    JOIN
+      category ON film_category.category_id = category.category_id
+    WHERE 
+      actor.first_name LIKE ?
+    ORDER BY DIFF
+    `,
+    [actor, search]
+  );
+
+  return rows;
+}
+
+export async function fuzzySearchFilmsWithGenre(genre) {
+  const search = `%${genre}%`;
+  const [rows] = await pool.query(
+    `
+    SELECT
+      film.film_id,
+      film.title,
+      film.description,
+      film.release_year,
+      film.language_id,
+      film.original_language_id,
+      film.rental_duration,
+      film.rental_rate,
+      film.length,
+      film.replacement_cost,
+      film.rating,
+      film.special_features,
+      film.last_update,
+      category.name AS genre,
+      LENGTH(category.name) - length(?) as DIFF
+    FROM
+      film
+    JOIN
+      film_category ON film.film_id = film_category.film_id
+    JOIN
+      category ON film_category.category_id = category.category_id
+    WHERE 
+      category.name LIKE ?
+    ORDER BY DIFF;
+    `,
+    [genre, search]
   );
 
   return rows;

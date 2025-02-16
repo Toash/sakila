@@ -10,6 +10,8 @@ import {
   getActorFilmCount,
   getTop5FilmsFromActor,
   fuzzySearchFilmsWithTitle,
+  fuzzySearchFilmsWithActor,
+  fuzzySearchFilmsWithGenre,
 } from "./database.js";
 import cors from "cors";
 
@@ -42,6 +44,16 @@ app.get("/films/title/:title", async (req, res) => {
 app.get("/films/search/title/:title", async (req, res) => {
   const title = req.params.title;
   const films = await fuzzySearchFilmsWithTitle(title);
+  res.send(films);
+});
+app.get("/films/search/actor/:actor", async (req, res) => {
+  const actor = req.params.actor;
+  const films = await fuzzySearchFilmsWithActor(actor);
+  res.send(films);
+});
+app.get("/films/search/genre/:genre", async (req, res) => {
+  const genre = req.params.genre;
+  const films = await fuzzySearchFilmsWithGenre(genre);
   res.send(films);
 });
 

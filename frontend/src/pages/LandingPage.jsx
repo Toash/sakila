@@ -72,7 +72,7 @@ function LandingPage() {
           fontSize={"4rem"}
           fontWeight={"bold"}
         >
-          Top 5 Films
+          TOP 5 FILMS
         </Typography>
         <Films></Films>
       </Box>
@@ -84,7 +84,7 @@ function LandingPage() {
           fontSize={"4rem"}
           fontWeight={"bold"}
         >
-          Top 5 Actors
+          TOP 5 ACTORS
         </Typography>
         <Actors></Actors>
       </Box>

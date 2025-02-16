@@ -21,7 +21,7 @@ export const FilmCard = ({ data }) => {
         <Typography
           fontSize="1.5rem"
           textAlign="center"
-          sx={{ color: "white" }}
+          sx={{ color: "white", fontWeight: "bold" }}
         >
           {data.title}
         </Typography>

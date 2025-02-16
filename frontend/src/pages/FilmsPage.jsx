@@ -84,9 +84,9 @@ function FilmsPage() {
     if (searchBy === "film") {
       endpoint = `/films/search/title/${submittedSearch}`;
     } else if (searchBy === "actor") {
-      endpoint = `/films/search/title/${submittedSearch}`;
+      endpoint = `/films/search/actor/${submittedSearch}`;
     } else if (searchBy === "genre") {
-      endpoint = `/films/search/title/${submittedSearch}`;
+      endpoint = `/films/search/genre/${submittedSearch}`;
     } else {
       console.error("Wrong search by");
       return [];
@@ -123,6 +123,8 @@ function FilmsPage() {
             <TableHead>
               <TableRow>
                 <TableCell>Title</TableCell>
+                {searchBy === "actor" && <TableCell>Actor</TableCell>}
+                <TableCell>Genre</TableCell>
                 <TableCell>Release Year</TableCell>
                 <TableCell>Length (Minutes)</TableCell>
                 <TableCell>Rating</TableCell>
@@ -140,6 +142,10 @@ function FilmsPage() {
                 return (
                   <TableRow key={i}>
                     <TableCell>{e.title}</TableCell>
+                    {searchBy === "actor" && (
+                      <TableCell>{e.actor_name}</TableCell>
+                    )}
+                    <TableCell>{e.genre}</TableCell>
                     <TableCell>{e.release_year}</TableCell>
                     <TableCell>{e.length}</TableCell>
                     <TableCell>{e.rating}</TableCell>
