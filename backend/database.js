@@ -97,6 +97,50 @@ export async function getFilmFromTitle(title) {
   return rows[0];
 }
 
+export async function getRentalCountFromFilmID(id) {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      film.film_id,
+      COUNT(*) AS rental_count
+    FROM
+      film
+    JOIN
+      inventory ON inventory.film_id = film.film_id
+    JOIN
+      rental ON rental.inventory_id = inventory.inventory_id
+    WHERE
+      film.film_id = ?
+    GROUP BY 
+      film.film_id
+    `,
+    [id]
+  );
+  return rows[0];
+}
+
+export async function getRentalCountFromFilmTitle(title) {
+  const [rows] = await pool.query(
+    `
+    SELECT
+      film.film_id,
+      COUNT(*) AS rental_count
+    FROM
+      film
+    JOIN
+      inventory ON inventory.film_id = film.film_id
+    JOIN
+      rental ON rental.inventory_id = inventory.inventory_id
+    WHERE
+      film.title = ?
+    GROUP BY 
+      film.film_id
+    `,
+    [title]
+  );
+  return rows[0];
+}
+
 export async function fuzzySearchFilmsWithTitle(title) {
   const search = `%${title}%`;
   const [rows] = await pool.query(
@@ -305,4 +349,15 @@ export async function createActor(first_name, last_name) {
   );
   const id = result.insertId;
   return getActor(id);
+}
+
+/* CUSTOMERS */
+export async function getCustomers() {
+  const [customers] = await pool.query(
+    `
+    SELECT * FROM customer
+    `
+  );
+
+  return customers;
 }

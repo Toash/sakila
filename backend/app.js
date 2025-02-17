@@ -12,6 +12,9 @@ import {
   fuzzySearchFilmsWithTitle,
   fuzzySearchFilmsWithActor,
   fuzzySearchFilmsWithGenre,
+  getCustomers,
+  getRentalCountFromFilmID,
+  getRentalCountFromFilmTitle,
 } from "./database.js";
 import cors from "cors";
 
@@ -27,6 +30,17 @@ app.use(express.json());
 app.get("/films/top5", async (req, res) => {
   const films = await getTop5RentedFilms();
   res.send(films);
+});
+
+app.get("/films/rental_count/id/:id", async (req, res) => {
+  const id = req.params.id;
+  const film = await getRentalCountFromFilmID(id);
+  res.send(film);
+});
+app.get("/films/rental_count/title/:title", async (req, res) => {
+  const title = req.params.title;
+  const film = await getRentalCountFromFilmTitle(title);
+  res.send(film);
 });
 
 app.get("/films/id/:id", async (req, res) => {
@@ -91,6 +105,13 @@ app.post("/actors", async (req, res) => {
   const { first_name, last_name } = req.body;
   const actor = createActor(first_name, last_name);
   res.status(201).send(actor);
+});
+
+/* ----------- CUSTOMERS ----------- */
+
+app.get("/customers", async (req, res) => {
+  const customers = await getCustomers();
+  res.send(customers);
 });
 
 // error middleware

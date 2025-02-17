@@ -13,6 +13,7 @@ import { ActorPage } from "./pages/ActorPage.jsx";
 import FilmsPage from "./pages/FilmsPage.jsx";
 
 import { ErrorBoundary } from "react-error-boundary";
+import CustomersPage from "./pages/CustomersPage.jsx";
 
 const logError = (error, info) => {
   // Do something with the error, e.g. log to an external API
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")).render(
             {/* main pages */}
             <Route index element={<LandingPage />}></Route>
             <Route index path="/films" element={<FilmsPage />}></Route>
+            <Route index path="/customers" element={<CustomersPage />}></Route>
             {/* sub pages */}
             <Route
               index

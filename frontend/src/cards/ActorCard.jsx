@@ -34,6 +34,9 @@ export const ActorCard = ({ data }) => {
             fontSize: "1.5rem",
           })}
         ></img>
+        <Typography textAlign={"center"}>
+          {data.film_count} Appearances
+        </Typography>
       </CardContent>
     </HoverCard>
   );

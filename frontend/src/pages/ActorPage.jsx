@@ -1,8 +1,20 @@
-import { Typography, Box, CircularProgress, Paper } from "@mui/material";
-import { useParams } from "react-router";
+import {
+  Typography,
+  Box,
+  CircularProgress,
+  Paper,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+} from "@mui/material";
+import { useNavigate, useParams } from "react-router";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import simpleSvgPlaceholder from "@cloudfour/simple-svg-placeholder";
+import MovieIcon from "@mui/icons-material/Movie";
 
 const api = axios.create({
   baseURL: "http://localhost:3000",
@@ -41,7 +53,7 @@ export const ActorPage = () => {
     queryKey: ["actor_top5film: " + id],
     queryFn: getFilmsFromActor,
   });
-
+  let navigate = useNavigate();
   if (actorIsLoading || countIsLoading || filmsIsLoading) {
     return <CircularProgress></CircularProgress>;
   }
@@ -56,14 +68,14 @@ export const ActorPage = () => {
         mt: "6rem",
       }}
     >
-      <Box display={"flex"} flexDirection={"column"} gap="2rem">
+      <Box display={"flex"} flexDirection={"column"} gap="4rem">
         <Box>
           <Typography variant="h1" fontWeight={"bold"}>
             {data.first_name} {data.last_name}
           </Typography>
 
           <Typography textAlign={"left"} fontSize={"2rem"} fontWeight={"bold"}>
-            - Film count: {film_count.film_count}
+            {film_count.film_count} Appearences
           </Typography>
         </Box>
 
@@ -74,15 +86,29 @@ export const ActorPage = () => {
             variant="h2"
             fontWeight={"bold"}
           >
-            Top 5 films
+            TOP 5 APPEARENCES
           </Typography>
-          {films.map((e, i) => {
-            return (
-              <Typography textAlign="left" key={i}>
-                {e.title}
-              </Typography>
-            );
-          })}
+          <List>
+            {films.map((e, i) => {
+              return (
+                <>
+                  <ListItem disablePadding key={i}>
+                    <ListItemButton
+                      onClick={() =>
+                        navigate("/film/title/" + encodeURIComponent(e.title))
+                      }
+                    >
+                      <ListItemIcon>
+                        <MovieIcon></MovieIcon>
+                      </ListItemIcon>
+                      <ListItemText primary={`${e.title}`}></ListItemText>
+                    </ListItemButton>
+                  </ListItem>
+                  <Divider></Divider>
+                </>
+              );
+            })}
+          </List>
         </Box>
       </Box>
 

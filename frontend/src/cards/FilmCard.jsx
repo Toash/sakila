@@ -7,11 +7,11 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router";
 import simpleSvgPlaceholder from "@cloudfour/simple-svg-placeholder";
-import randomColor from "randomcolor";
 import HoverCard from "./HoverCard";
 
 export const FilmCard = ({ data }) => {
   let navigate = useNavigate();
+
   return (
     <HoverCard
       onClick={() => navigate("/film/title/" + encodeURIComponent(data.title))}
@@ -25,6 +25,7 @@ export const FilmCard = ({ data }) => {
         >
           {data.title}
         </Typography>
+
         <img
           src={simpleSvgPlaceholder({
             //bgColor: randomColor(),
@@ -34,6 +35,7 @@ export const FilmCard = ({ data }) => {
             fontSize: "1.5rem",
           })}
         ></img>
+        <Typography textAlign={"center"}>{data.rented} Rentals</Typography>
       </CardContent>
     </HoverCard>
   );
