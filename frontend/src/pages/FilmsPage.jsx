@@ -23,7 +23,6 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
 import { useNavigate, useSearchParams } from "react-router";
-import { DataGrid } from "@mui/x-data-grid";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_backend,

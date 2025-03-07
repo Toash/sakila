@@ -15,6 +15,9 @@ import {
   getCustomers,
   getRentalCountFromFilmID,
   getRentalCountFromFilmTitle,
+  fuzzySearchCustomerById,
+  fuzzySearchCustomerByFirstName,
+  fuzzySearchCustomerByLastName,
 } from "./database.js";
 import cors from "cors";
 
@@ -114,6 +117,22 @@ app.get("/customers", async (req, res) => {
   res.send(customers);
 });
 
+app.get("/customers/id/:id", async (req, res) => {
+  const id = req.params.id;
+  const customers = await fuzzySearchCustomerById(id);
+  res.send(customers);
+});
+
+app.get("/customers/first/:first", async (req, res) => {
+  const first = req.params.first;
+  const customers = await fuzzySearchCustomerByFirstName(first);
+  res.send(customers);
+});
+app.get("/customers/last/:last", async (req, res) => {
+  const last = req.params.last;
+  const customers = await fuzzySearchCustomerByLastName(last);
+  res.send(customers);
+});
 // error middleware
 // https://expressjs.com/en/guide/error-handling.html
 app.use((err, req, res, next) => {

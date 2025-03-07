@@ -33,45 +33,66 @@ function CustomersPage() {
   const [searchParams] = useSearchParams();
 
   const navigate = useNavigate();
+
+  //data typed in search bar
   const [search, setSearch] = useState("");
+  // entered search term
   const [submittedSearch, setSubmittedSearch] = useState("");
+  const [searchBy, setSearchBy] = useState();
 
   // get the search and searchBy query params on page load.
   // update states from these query params
   // these states that are updated will trigger useQuery to fetch the data.
   useEffect(() => {
     const initialSearch = searchParams.get("search");
+    const initialSearchBy = searchParams.get("searchBy");
 
-    if (!initialSearch) return;
+    if (!initialSearch) {
+      return;
+    }
 
     setSearch(initialSearch);
     setSubmittedSearch(initialSearch);
+    setSearchBy(initialSearchBy);
   }, []);
 
-  // useeffect will run when variables in dependency array changes.
-  // state changes are asyncronous so we need to do this
-  // (setSubmittedSearch will not update submittedSearch immediately)
   useEffect(() => {
-    if (submittedSearch) updateQueryParams();
+    if (submittedSearch) {
+      updateQueryParams();
+    }
   }, [submittedSearch]);
 
   const updateQueryParams = () => {
     const newSearchParams = new URLSearchParams(searchParams.toString()); // Create a copy
-    if (newSearchParams.get("search") === submittedSearch) {
+    if (
+      newSearchParams.get("search") === submittedSearch &&
+      newSearchParams.get("searchBy") === searchBy
+    ) {
       return;
     }
     newSearchParams.set("search", submittedSearch);
+    newSearchParams.set("searchBy", searchBy);
     navigate(`?${newSearchParams.toString()}`); // Update URL
   };
 
   async function searchCustomers() {
     let endpoint = "";
 
+    console.log(searchBy);
+    if (searchBy === "id") {
+      endpoint = `/customers/id/${submittedSearch}`;
+    } else if (searchBy === "first") {
+      endpoint = `/customers/first/${submittedSearch}`;
+    } else if (searchBy === "last") {
+      endpoint = `/customers/last/${submittedSearch}`;
+    }
+
+    // get all customers if no submitted search
     if (!submittedSearch) {
-      console.log("setting endpoint ");
       endpoint = `/customers`;
     }
 
+    console.log(endpoint);
     const response = await api.get(endpoint);
     return response.data;
   }
@@ -164,7 +185,7 @@ function CustomersPage() {
         Customers page
       </Typography>
 
-      {/*
+      {/* SEARCH */}
       <Box width="100%" id="search" display="flex" justifyContent={"center"}>
         <Box width="80%" display="flex">
           <TextField
@@ -180,7 +201,6 @@ function CustomersPage() {
               setSearch(e.target.value);
             }}
           ></TextField>
-
           <FormControl sx={{ minWidth: "300px" }}>
             <InputLabel labelId="option-label">Search By</InputLabel>
             <Select
@@ -191,12 +211,11 @@ function CustomersPage() {
               label="option"
               labelId="option-label"
             >
-              <MenuItem value="film">Film</MenuItem>
-              <MenuItem value="actor">Actor</MenuItem>
-              <MenuItem value="genre">Genre</MenuItem>
+              <MenuItem value="id">ID</MenuItem>
+              <MenuItem value="first">First Name</MenuItem>
+              <MenuItem value="last">Last Name</MenuItem>
             </Select>
           </FormControl>
-
           <Button
             variant="outlined"
             onClick={() => {
@@ -207,8 +226,6 @@ function CustomersPage() {
           </Button>
         </Box>
       </Box>
-      */}
-
       <CustomerTable></CustomerTable>
     </Box>
   );

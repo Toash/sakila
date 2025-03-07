@@ -13,7 +13,7 @@ const pool = mysql
   .createPool({
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
+    /*password: process.env.MYSQL_PASSWORD,*/
     database: process.env.MYSQL_DATABASE,
   })
   .promise();
@@ -360,4 +360,57 @@ export async function getCustomers() {
   );
 
   return customers;
+}
+
+export async function fuzzySearchCustomerById(id) {
+  const search = `%${id}%`;
+  const [rows] = await pool.query(
+    `
+		SELECT 
+			*,
+			LENGTH(customer.customer_id) - LENGTH(?) as DIFF
+		FROM 
+			customer
+		WHERE 
+			customer.customer_id LIKE ? 
+		ORDER BY DIFF
+		`,
+    [id, search]
+  );
+  return rows;
+}
+
+export async function fuzzySearchCustomerByFirstName(first) {
+  const search = `%${first}%`;
+  const [rows] = await pool.query(
+    `
+		SELECT 
+			*,
+			LENGTH(customer.first_name) - LENGTH(?) as DIFF
+		FROM 
+			customer
+		WHERE 
+			customer.first_name LIKE ? 
+		ORDER BY DIFF
+		`,
+    [first, search]
+  );
+  return rows;
+}
+export async function fuzzySearchCustomerByLastName(last) {
+  const search = `%${last}%`;
+  const [rows] = await pool.query(
+    `
+		SELECT 
+			*,
+			LENGTH(customer.last_name) - LENGTH(?) as DIFF
+		FROM 
+			customer
+		WHERE 
+			customer.last_name LIKE ? 
+		ORDER BY DIFF
+		`,
+    [last, search]
+  );
+  return rows;
 }
