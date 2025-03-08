@@ -30,7 +30,7 @@ import { Edit, Delete, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-mat
 import { useEffect, useState } from "react";
 
 import axios from "axios";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -266,12 +266,16 @@ function CustomersPage() {
   const handleDeleteCustomer = async (id) => {
     try {
       await api.delete(`/customers/${id}`);
-      setSnackbarMessage(`Successfully deleted customer`);
+      setSnackbarMessage('Successfully deleted customer');
       setSnackbarOpen(true);
+      queryClient.invalidateQueries({ queryKey: ["customerSearch"] });
     } catch (error) {
       console.error("Failed to delete customer", error);
+      setSnackbarMessage(
+        error.response?.data?.error || 'Failed to delete customer'
+      );
+      setSnackbarOpen(true);
     }
-    queryClient.invalidateQueries({ queryKey: ["customerSearch"] });
   };
 
   // get the search and searchBy query params on page load.
@@ -331,12 +335,29 @@ function CustomersPage() {
 
   function Row({ customer, handleEditClickOpen, handleDeleteCustomer }) {
     const [open, setOpen] = useState(false);
+    const queryClient = useQueryClient();
 
     const { data: customerRentals, isLoading: isLoadingRentals } = useQuery({
       queryKey: ['customer_rentals', customer.customer_id],
       queryFn: () => api.get(`/customers/${customer.customer_id}/rentals`).then(res => res.data),
       enabled: open,
     });
+
+    const returnMutation = useMutation({
+      mutationFn: (rental_id) => api.post(`/rentals/${rental_id}/return`),
+      onSuccess: () => {
+        queryClient.invalidateQueries(['customer_rentals', customer.customer_id]);
+      },
+    });
+
+    const handleReturn = async (rental_id, e) => {
+      e.stopPropagation();
+      try {
+        await returnMutation.mutateAsync(rental_id);
+      } catch (error) {
+        console.error('Error returning film:', error);
+      }
+    };
 
     const formatDate = (dateString) => {
       if (!dateString) return 'Not returned';
@@ -416,6 +437,7 @@ function CustomersPage() {
                           <TableCell>Rental Date</TableCell>
                           <TableCell>Return Date</TableCell>
                           <TableCell>Status</TableCell>
+                          <TableCell>Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -431,6 +453,22 @@ function CustomersPage() {
                               >
                                 {rental.return_date ? 'Returned' : 'Active Rental'}
                               </Typography>
+                            </TableCell>
+                            <TableCell>
+                              {!rental.return_date && (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  onClick={(e) => handleReturn(rental.rental_id, e)}
+                                  disabled={returnMutation.isPending}
+                                >
+                                  {returnMutation.isPending ? (
+                                    <CircularProgress size={20} />
+                                  ) : (
+                                    'Return Film'
+                                  )}
+                                </Button>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -746,7 +784,7 @@ function CustomersPage() {
       >
         <Alert
           onClose={handleSnackbarClose}
-          severity="success"
+          severity={snackbarMessage.startsWith('Successfully') ? 'success' : 'error'}
           sx={{ width: "100%" }}
         >
           {snackbarMessage}

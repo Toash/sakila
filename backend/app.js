@@ -26,6 +26,7 @@ import {
   getAvailableInventoryCount,
   rentFilm,
   getCustomerRentals,
+  returnFilm
 } from "./database.js";
 import cors from "cors";
 const app = express();
@@ -190,10 +191,20 @@ app.post("/customers", async (req, res) => {
   res.status(201).send(customer);
 });
 app.delete("/customers/:id", async (req, res) => {
-  console.log("deleting customer");
-  const id = req.params.id;
-  const customer = await deleteCustomer(id);
-  res.send(customer);
+  try {
+    const id = req.params.id;
+    const result = await deleteCustomer(id);
+    res.json(result);
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    if (error.message === 'Cannot delete customer with active rentals' || 
+        error.message === 'Cannot delete customer with rental history' ||
+        error.message === 'Customer not found') {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 });
 
 app.put("/customers/:id", async (req, res) => {
@@ -229,6 +240,21 @@ app.get("/customers/:id/rentals", async (req, res) => {
   } catch (error) {
     console.error('Error getting customer rentals:', error);
     res.status(500).send('Error getting customer rentals');
+  }
+});
+
+app.post('/rentals/:id/return', async (req, res) => {
+  try {
+    const rental_id = parseInt(req.params.id);
+    const result = await returnFilm(rental_id);
+    res.json(result);
+  } catch (error) {
+    console.error('Error returning film:', error);
+    if (error.message === 'Rental not found' || error.message === 'Film already returned') {
+      res.status(400).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 });
 

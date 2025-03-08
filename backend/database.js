@@ -438,14 +438,41 @@ export async function addCustomer(first_name, last_name, email) {
 }
 
 export async function deleteCustomer(id) {
-  const [result] = await pool.query(
-    `
-        DELETE FROM customer
-        WHERE customer_id = ?
-        `,
-    [id]
-  );
-  return result;
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+
+    // First delete all rental records for this customer
+    await connection.query(
+      `
+      DELETE FROM rental
+      WHERE customer_id = ?
+      `,
+      [id]
+    );
+
+    // Then delete the customer
+    const [result] = await connection.query(
+      `
+      DELETE FROM customer
+      WHERE customer_id = ?
+      `,
+      [id]
+    );
+    
+    if (result.affectedRows === 0) {
+      throw new Error('Customer not found');
+    }
+
+    await connection.commit();
+    return { success: true };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function updateCustomer(id, first_name, last_name, email) {
@@ -594,4 +621,30 @@ export async function getCustomerRentals(customer_id) {
     [customer_id]
   );
   return rows;
+}
+
+export async function returnFilm(rental_id) {
+  const [result] = await pool.query(
+    `
+    UPDATE rental
+    SET return_date = CURRENT_TIMESTAMP
+    WHERE rental_id = ? AND return_date IS NULL
+    `,
+    [rental_id]
+  );
+
+  if (result.affectedRows === 0) {
+    const [rental] = await pool.query(
+      'SELECT return_date FROM rental WHERE rental_id = ?',
+      [rental_id]
+    );
+    
+    if (rental.length === 0) {
+      throw new Error('Rental not found');
+    } else if (rental[0].return_date) {
+      throw new Error('Film already returned');
+    }
+  }
+
+  return { success: true };
 }
