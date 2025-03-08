@@ -436,3 +436,35 @@ export async function addCustomer(first_name, last_name, email) {
   const id = result.insertId;
   return getCustomer(id);
 }
+
+export async function deleteCustomer(id) {
+  const [result] = await pool.query(
+    `
+        DELETE FROM customer
+        WHERE customer_id = ?
+        `,
+    [id]
+  );
+  return result;
+}
+
+export async function updateCustomer(id, first_name, last_name, email) {
+  const [result] = await pool.query(
+    `
+    UPDATE customer
+    SET 
+      first_name = ?,
+      last_name = ?,
+      email = ?,
+      last_update = CURRENT_TIMESTAMP
+    WHERE customer_id = ?
+    `,
+    [first_name, last_name, email, id]
+  );
+
+  if (result.affectedRows === 0) {
+    throw new Error('Customer not found');
+  }
+
+  return { customer_id: id, first_name, last_name, email };
+}

@@ -20,6 +20,8 @@ import {
   fuzzySearchCustomerByFirstName,
   fuzzySearchCustomerByLastName,
   addCustomer,
+  deleteCustomer,
+  updateCustomer,
 } from "./database.js";
 import cors from "cors";
 const app = express();
@@ -150,6 +152,37 @@ app.post("/customers", async (req, res) => {
 
   const customer = addCustomer(first_name, last_name, email);
   res.status(201).send(customer);
+});
+app.delete("/customers/:id", async (req, res) => {
+  console.log("deleting customer");
+  const id = req.params.id;
+  const customer = await deleteCustomer(id);
+  res.send(customer);
+});
+
+app.put("/customers/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    let { first_name, last_name, email } = req.body;
+
+    if (!first_name || !last_name || !email) {
+      return res.status(400).send("Missing required fields");
+    }
+
+    // follow same format as the rest of the database
+    first_name = first_name.toUpperCase();
+    last_name = last_name.toUpperCase();
+
+    const customer = await updateCustomer(id, first_name, last_name, email);
+    res.send(customer);
+  } catch (error) {
+    if (error.message === 'Customer not found') {
+      res.status(404).send(error.message);
+    } else {
+      console.error('Error updating customer:', error);
+      res.status(500).send('Error updating customer');
+    }
+  }
 });
 
 // error middleware

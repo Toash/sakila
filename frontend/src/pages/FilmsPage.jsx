@@ -196,7 +196,7 @@ function FilmsPage() {
       alignItems={"center"}
     >
       <Typography textAlign="center" fontWeight="bold" variant="h1">
-        Films page
+      FILMS PAGE
       </Typography>
 
       <Box width="100%" id="search" display="flex" justifyContent={"center"}>
