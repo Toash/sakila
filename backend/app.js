@@ -22,6 +22,7 @@ import {
   addCustomer,
   deleteCustomer,
   updateCustomer,
+  getAllFilms,
 } from "./database.js";
 import cors from "cors";
 const app = express();
@@ -74,6 +75,11 @@ app.get("/films/search/actor/:actor", async (req, res) => {
 app.get("/films/search/genre/:genre", async (req, res) => {
   const genre = req.params.genre;
   const films = await fuzzySearchFilmsWithGenre(genre);
+  res.send(films);
+});
+
+app.get("/films", async (req, res) => {
+  const films = await getAllFilms();
   res.send(films);
 });
 

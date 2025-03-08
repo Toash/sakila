@@ -16,7 +16,10 @@ import {
   Paper,
   TableFooter,
   TablePagination,
+  Collapse,
+  IconButton,
 } from "@mui/material";
+import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { useEffect, useState, useMemo } from "react";
 
 import axios from "axios";
@@ -38,24 +41,17 @@ function FilmsPage() {
   const [searchBy, setSearchBy] = useState("film");
 
   // get the search and searchBy query params on page load.
-  // update states from these query params
-  // these states that are updated will trigger useQuery to fetch the data.
   useEffect(() => {
     const initialSearch = searchParams.get("search");
     const initialSearchBy = searchParams.get("searchBy");
 
-    if (!initialSearch) {
-      return;
+    if (initialSearch) {
+      setSearch(initialSearch);
+      setSubmittedSearch(initialSearch);
+      setSearchBy(initialSearchBy || "film");
     }
-
-    setSearch(initialSearch);
-    setSubmittedSearch(initialSearch);
-    setSearchBy(initialSearchBy);
   }, []);
 
-  // useeffect will run when variables in dependency array changes.
-  // state changes are asyncronous so we need to do this
-  // (setSubmittedSearch will not update submittedSearch immediately)
   useEffect(() => {
     if (submittedSearch) {
       updateQueryParams();
@@ -63,23 +59,30 @@ function FilmsPage() {
   }, [submittedSearch]);
 
   const updateQueryParams = () => {
-    const newSearchParams = new URLSearchParams(searchParams.toString()); // Create a copy
-    if (
-      newSearchParams.get("search") === submittedSearch &&
-      newSearchParams.get("searchBy") === searchBy
-    ) {
-      return;
+    const newSearchParams = new URLSearchParams(searchParams.toString());
+    if (submittedSearch) {
+      if (
+        newSearchParams.get("search") === submittedSearch &&
+        newSearchParams.get("searchBy") === searchBy
+      ) {
+        return;
+      }
+      newSearchParams.set("search", submittedSearch);
+      newSearchParams.set("searchBy", searchBy);
+    } else {
+      newSearchParams.delete("search");
+      newSearchParams.delete("searchBy");
     }
-    newSearchParams.set("search", submittedSearch);
-    newSearchParams.set("searchBy", searchBy);
-    navigate(`?${newSearchParams.toString()}`); // Update URL
+    navigate(`?${newSearchParams.toString()}`);
   };
 
-  async function searchFilms() {
-    if (submittedSearch.trim() === "") return [];
+  async function fetchFilms() {
+    if (!submittedSearch) {
+      const response = await api.get('/films');
+      return response.data;
+    }
 
     let endpoint = "";
-
     if (searchBy === "film") {
       endpoint = `/films/search/title/${submittedSearch}`;
     } else if (searchBy === "actor") {
@@ -96,15 +99,72 @@ function FilmsPage() {
   }
 
   const { data, isLoading } = useQuery({
-    // will refetch data when query key changes
-    enabled: !!submittedSearch, // !! converts to bool
-    queryKey: ["film_search", submittedSearch],
-    queryFn: searchFilms,
+    queryKey: ["films", submittedSearch, searchBy],
+    queryFn: fetchFilms,
   });
+
+  function Row({ film, searchBy }) {
+    const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
+
+    return (
+      <>
+        <TableRow 
+          onClick={() => setOpen(!open)}
+          sx={{ 
+            '& > *': { borderBottom: 'unset' },
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: 'rgba(25, 118, 210, 0.08)', 
+              transform: 'scale(1.005)', 
+            },
+            transition: 'all 0.2s ease',
+            backgroundColor: open ? 'rgba(25, 118, 210, 0.12)' : 'inherit',
+          }}
+        >
+          <TableCell>{film.title}</TableCell>
+          {searchBy === "actor" && <TableCell>{film.actor_name}</TableCell>}
+          <TableCell>{film.genre}</TableCell>
+          <TableCell>{film.release_year}</TableCell>
+          <TableCell>{film.length}</TableCell>
+          <TableCell>{film.rating}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={searchBy === "actor" ? 7 : 6}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h6" gutterBottom component="div">
+                  Film Details
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body1" gutterBottom>
+                    {film.description}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Rental Rate: ${film.rental_rate} | Rental Duration: {film.rental_duration} days
+                  </Typography>
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate("/film/title/" + encodeURIComponent(film.title));
+                    }}
+                    variant="contained"
+                    sx={{ mt: 2 }}
+                  >
+                    See Full Details
+                  </Button>
+                </Box>
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      </>
+    );
+  }
 
   function FilmTable() {
     const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const handleChangePage = (event, newPage) => {
       setPage(newPage);
@@ -127,7 +187,6 @@ function FilmsPage() {
                 <TableCell>Release Year</TableCell>
                 <TableCell>Length (Minutes)</TableCell>
                 <TableCell>Rating</TableCell>
-                <TableCell>Details</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -137,30 +196,9 @@ function FilmsPage() {
                     page * rowsPerPage + rowsPerPage
                   )
                 : data
-              )?.map((e, i) => {
-                return (
-                  <TableRow key={i}>
-                    <TableCell>{e.title}</TableCell>
-                    {searchBy === "actor" && (
-                      <TableCell>{e.actor_name}</TableCell>
-                    )}
-                    <TableCell>{e.genre}</TableCell>
-                    <TableCell>{e.release_year}</TableCell>
-                    <TableCell>{e.length}</TableCell>
-                    <TableCell>{e.rating}</TableCell>
-                    <TableCell>
-                      <Button
-                        onClick={() =>
-                          navigate("/film/title/" + encodeURIComponent(e.title))
-                        }
-                        variant="outlined"
-                      >
-                        See Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              )?.map((film, i) => (
+                <Row key={i} film={film} searchBy={searchBy} />
+              ))}
             </TableBody>
             {data && (
               <TableFooter>

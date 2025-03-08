@@ -468,3 +468,44 @@ export async function updateCustomer(id, first_name, last_name, email) {
 
   return { customer_id: id, first_name, last_name, email };
 }
+
+export async function rentFilm(customer_id, film_id) {
+  const [result] = await pool.query(
+    `
+    INSERT INTO rental (customer_id, film_id, rental_date)
+    VALUES (?, ?, CURRENT_DATE())
+    `,
+    [customer_id, film_id]
+  );
+  return result;
+}
+
+export async function getAllFilms() {
+  const [rows] = await pool.query(
+    `
+    SELECT 
+      film.film_id,
+      film.title,
+      film.description,
+      film.release_year,
+      film.language_id,
+      film.original_language_id,
+      film.rental_duration,
+      film.rental_rate,
+      film.length,
+      film.replacement_cost,
+      film.rating,
+      film.special_features,
+      film.last_update,
+      category.name AS genre
+    FROM 
+      film
+    JOIN
+      film_category ON film.film_id = film_category.film_id
+    JOIN
+      category ON film_category.category_id = category.category_id
+    ORDER BY film.title ASC
+    `
+  );
+  return rows;
+}
