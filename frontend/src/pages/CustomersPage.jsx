@@ -563,9 +563,12 @@ function CustomersPage() {
       gap="4rem"
       alignItems={"center"}
     >
-      <Typography textAlign="center" fontWeight="bold" variant="h1">
-      CUSTOMERS PAGE
-      </Typography>
+      <Box width="80%" display="flex" flexDirection="column" gap="1rem">
+        <Typography textAlign="center" fontWeight="bold" variant="h1">
+        CUSTOMERS PAGE
+        </Typography>
+        <Typography textAlign="center" fontSize="1.2rem">Manage customers- view, search, add, edit, delete, and track rental history.</Typography>
+      </Box>
 
       {/* SEARCH */}
       <Box width="100%" id="search" display="flex" justifyContent={"center"}>

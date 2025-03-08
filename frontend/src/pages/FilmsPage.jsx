@@ -18,6 +18,7 @@ import {
   TablePagination,
   Collapse,
   IconButton,
+  Divider,
 } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { useEffect, useState, useMemo } from "react";
@@ -210,8 +211,9 @@ function FilmsPage() {
                       )}
                     </Typography>
                   </Box>
+                  <Divider></Divider>
                   <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 300 }}>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                           <FormControl sx={{ minWidth: 120 }}>
@@ -263,7 +265,7 @@ function FilmsPage() {
                           </FormControl>
                         )}
                       </Box>
-                      <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ display: 'flex', gap: 2 ,justifyContent: 'center', height:"100%"}}>
                         <Button
                           onClick={handleRent}
                           variant="contained"
@@ -365,15 +367,18 @@ function FilmsPage() {
       gap="4rem"
       alignItems={"center"}
     >
-      <Typography textAlign="center" fontWeight="bold" variant="h1">
-      FILMS PAGE
-      </Typography>
+      <Box width="80%" display="flex" flexDirection="column" gap="1rem">
+        <Typography textAlign="center" fontWeight="bold" variant="h1">
+        FILMS PAGE
+        </Typography>
+        <Typography textAlign="center" fontSize="1.2rem">Manage films- view, search, add, edit, delete, and track inventory.</Typography>
+      </Box>
 
       <Box width="100%" id="search" display="flex" justifyContent={"center"}>
-        <Box width="80%" display="flex">
+        <Box width="80%" display="flex" flexWrap={"wrap"} gap=".5rem">
           <TextField
             label="Search"
-            sx={{ flex: "1" }}
+            sx={{ flex: "4 0 300px" }}
             value={search}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -384,7 +389,7 @@ function FilmsPage() {
               setSearch(e.target.value);
             }}
           ></TextField>
-          <FormControl sx={{ minWidth: "300px" }}>
+          <FormControl sx={{ flex: "1 0 200px" }}>
             <InputLabel labelId="option-label">Search By</InputLabel>
             <Select
               value={searchBy}
@@ -404,6 +409,7 @@ function FilmsPage() {
             onClick={() => {
               setSubmittedSearch(search);
             }}
+            sx={{ flex: "1 0 100px" }}
           >
             Search
           </Button>
