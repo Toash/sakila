@@ -470,14 +470,53 @@ export async function updateCustomer(id, first_name, last_name, email) {
 }
 
 export async function rentFilm(customer_id, film_id) {
-  const [result] = await pool.query(
-    `
-    INSERT INTO rental (customer_id, film_id, rental_date)
-    VALUES (?, ?, CURRENT_DATE())
-    `,
-    [customer_id, film_id]
-  );
-  return result;
+  // Start a transaction since we need to do multiple operations
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Find an available inventory item for this film
+    const [inventory] = await connection.query(
+      `
+      SELECT inventory_id 
+      FROM inventory i
+      WHERE 
+        i.film_id = ? 
+        AND i.store_id = 1
+        AND NOT EXISTS (
+          SELECT 1 
+          FROM rental r 
+          WHERE r.inventory_id = i.inventory_id 
+          AND r.return_date IS NULL
+        )
+      LIMIT 1
+      `,
+      [film_id]
+    );
+
+    if (!inventory.length) {
+      throw new Error('No available copies');
+    }
+
+    // Create the rental
+    const [result] = await connection.query(
+      `
+      INSERT INTO rental 
+        (rental_date, inventory_id, customer_id, staff_id)
+      VALUES 
+        (CURRENT_TIMESTAMP, ?, ?, 1)
+      `,
+      [inventory[0].inventory_id, customer_id]
+    );
+
+    await connection.commit();
+    return { success: true, rental_id: result.insertId };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function getAllFilms() {
@@ -508,4 +547,26 @@ export async function getAllFilms() {
     `
   );
   return rows;
+}
+
+export async function getAvailableInventoryCount(film_id) {
+  const [rows] = await pool.query(
+    `
+    SELECT COUNT(*) as available_count
+    FROM inventory i
+    WHERE 
+      i.film_id = ?
+      AND i.store_id = 1
+      AND NOT EXISTS (
+        SELECT 1 
+        FROM rental r 
+        WHERE 
+          r.inventory_id = i.inventory_id
+          AND r.return_date IS NULL
+      )
+    `,
+    [film_id]
+  );
+
+  return rows[0];
 }

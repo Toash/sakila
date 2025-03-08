@@ -23,7 +23,7 @@ import { KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { useEffect, useState, useMemo } from "react";
 
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -105,7 +105,58 @@ function FilmsPage() {
 
   function Row({ film, searchBy }) {
     const [open, setOpen] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState('');
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [searchType, setSearchType] = useState('first'); // 'first', 'last', or 'id'
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+
+    // Debounce customer search
+    const debouncedSearch = useMemo(() => {
+      if (!customerSearch) return '';
+      return customerSearch;
+    }, [customerSearch]);
+
+    const { data: inventory, isLoading: isLoadingInventory } = useQuery({
+      queryKey: ['inventory', film.film_id],
+      queryFn: () => api.get(`/films/inventory/${film.film_id}`).then(res => res.data),
+      enabled: open,
+      staleTime: 30000,
+      cacheTime: 5 * 60 * 1000,
+    });
+
+    const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+      queryKey: ['customers', searchType, debouncedSearch],
+      queryFn: () => {
+        if (!debouncedSearch) return [];
+        return api.get(`/customers/${searchType}/${debouncedSearch}`).then(res => res.data);
+      },
+      enabled: !!debouncedSearch,
+    });
+
+    const rentMutation = useMutation({
+      mutationFn: (customerId) => 
+        api.post(`/films/${film.film_id}/rent`, { customer_id: customerId }),
+      onSuccess: () => {
+        queryClient.invalidateQueries(['inventory', film.film_id]);
+        setSelectedCustomer('');
+        setCustomerSearch('');
+      },
+    });
+
+    const handleRent = async (e) => {
+      e.stopPropagation();
+      if (!selectedCustomer) {
+        alert('Please select a customer');
+        return;
+      }
+      try {
+        await rentMutation.mutateAsync(selectedCustomer);
+        alert('Rental successful!');
+      } catch (error) {
+        alert(error.response?.data || 'Error processing rental');
+      }
+    };
 
     return (
       <>
@@ -122,6 +173,7 @@ function FilmsPage() {
             backgroundColor: open ? 'rgba(25, 118, 210, 0.12)' : 'inherit',
           }}
         >
+          <TableCell>{film.film_id}</TableCell>
           <TableCell>{film.title}</TableCell>
           {searchBy === "actor" && <TableCell>{film.actor_name}</TableCell>}
           <TableCell>{film.genre}</TableCell>
@@ -130,7 +182,7 @@ function FilmsPage() {
           <TableCell>{film.rating}</TableCell>
         </TableRow>
         <TableRow>
-          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={searchBy === "actor" ? 7 : 6}>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={searchBy === "actor" ? 8 : 7}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box sx={{ margin: 1 }}>
                 <Typography variant="h6" gutterBottom component="div">
@@ -140,19 +192,98 @@ function FilmsPage() {
                   <Typography variant="body1" gutterBottom>
                     {film.description}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Rental Rate: ${film.rental_rate} | Rental Duration: {film.rental_duration} days
-                  </Typography>
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate("/film/title/" + encodeURIComponent(film.title));
-                    }}
-                    variant="contained"
-                    sx={{ mt: 2 }}
-                  >
-                    See Full Details
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Rental Rate: ${film.rental_rate} | Rental Duration: {film.rental_duration} days
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      color={inventory?.available_count > 0 ? "success.main" : "error.main"}
+                      sx={{ fontWeight: 'bold' }}
+                    >
+                      {isLoadingInventory ? (
+                        'Loading inventory...'
+                      ) : inventory?.available_count > 0 ? (
+                        `${inventory.available_count} copies available`
+                      ) : (
+                        'Currently unavailable'
+                      )}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 300 }}>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <FormControl sx={{ minWidth: 120 }}>
+                            <InputLabel>Search By</InputLabel>
+                            <Select
+                              value={searchType}
+                              label="Search By"
+                              onChange={(e) => {
+                                setSearchType(e.target.value);
+                                setCustomerSearch('');
+                                setSelectedCustomer('');
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MenuItem value="id">ID</MenuItem>
+                              <MenuItem value="first">First Name</MenuItem>
+                              <MenuItem value="last">Last Name</MenuItem>
+                            </Select>
+                          </FormControl>
+                          <TextField
+                            label={`Search by ${searchType === 'id' ? 'ID' : searchType === 'first' ? 'first name' : 'last name'}`}
+                            value={customerSearch}
+                            onChange={(e) => setCustomerSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            sx={{ flex: 1 }}
+                          />
+                        </Box>
+                        {customerSearch && (
+                          <FormControl>
+                            <InputLabel>Select Customer</InputLabel>
+                            <Select
+                              value={selectedCustomer}
+                              onChange={(e) => setSelectedCustomer(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              label="Select Customer"
+                            >
+                              {isLoadingCustomers ? (
+                                <MenuItem disabled>Loading...</MenuItem>
+                              ) : customers?.length ? (
+                                customers.map((customer) => (
+                                  <MenuItem key={customer.customer_id} value={customer.customer_id}>
+                                    {customer.first_name} {customer.last_name} (ID: {customer.customer_id})
+                                  </MenuItem>
+                                ))
+                              ) : (
+                                <MenuItem disabled>No customers found</MenuItem>
+                              )}
+                            </Select>
+                          </FormControl>
+                        )}
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                          onClick={handleRent}
+                          variant="contained"
+                          color="primary"
+                          disabled={!inventory?.available_count || rentMutation.isPending || !selectedCustomer}
+                        >
+                          {rentMutation.isPending ? 'Processing...' : 'Rent Film'}
+                        </Button>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/film/title/" + encodeURIComponent(film.title));
+                          }}
+                          variant="outlined"
+                        >
+                          See Full Details
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
                 </Box>
               </Box>
             </Collapse>
@@ -181,6 +312,7 @@ function FilmsPage() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Title</TableCell>
                 {searchBy === "actor" && <TableCell>Actor</TableCell>}
                 <TableCell>Genre</TableCell>

@@ -23,6 +23,8 @@ import {
   deleteCustomer,
   updateCustomer,
   getAllFilms,
+  getAvailableInventoryCount,
+  rentFilm,
 } from "./database.js";
 import cors from "cors";
 const app = express();
@@ -81,6 +83,33 @@ app.get("/films/search/genre/:genre", async (req, res) => {
 app.get("/films", async (req, res) => {
   const films = await getAllFilms();
   res.send(films);
+});
+
+app.get("/films/inventory/:id", async (req, res) => {
+  const id = req.params.id;
+  const inventory = await getAvailableInventoryCount(id);
+  res.send(inventory);
+});
+
+app.post("/films/:id/rent", async (req, res) => {
+  try {
+    const film_id = req.params.id;
+    const { customer_id } = req.body;
+
+    if (!customer_id) {
+      return res.status(400).send("Customer ID is required");
+    }
+
+    const result = await rentFilm(customer_id, film_id);
+    res.status(201).send(result);
+  } catch (error) {
+    console.error('Error renting film:', error);
+    if (error.message === 'No available copies') {
+      res.status(400).send(error.message);
+    } else {
+      res.status(500).send('Error processing rental');
+    }
+  }
 });
 
 /* ---------- ACTORS ---------- */
