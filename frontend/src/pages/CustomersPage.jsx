@@ -24,6 +24,7 @@ import {
   Alert,
   IconButton,
   Collapse,
+  Paper,
 } from "@mui/material";
 import { Edit, Delete, KeyboardArrowDown, KeyboardArrowUp } from "@mui/icons-material";
 import { useEffect, useState } from "react";
@@ -331,6 +332,21 @@ function CustomersPage() {
   function Row({ customer, handleEditClickOpen, handleDeleteCustomer }) {
     const [open, setOpen] = useState(false);
 
+    const { data: customerRentals, isLoading: isLoadingRentals } = useQuery({
+      queryKey: ['customer_rentals', customer.customer_id],
+      queryFn: () => api.get(`/customers/${customer.customer_id}/rentals`).then(res => res.data),
+      enabled: open,
+    });
+
+    const formatDate = (dateString) => {
+      if (!dateString) return 'Not returned';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    };
+
     return (
       <>
         <TableRow 
@@ -339,8 +355,8 @@ function CustomersPage() {
             '& > *': { borderBottom: 'unset' },
             cursor: 'pointer',
             '&:hover': {
-              backgroundColor: 'rgba(25, 118, 210, 0.08)', 
-              transform: 'scale(1.005)', 
+              backgroundColor: 'rgba(25, 118, 210, 0.08)',
+              transform: 'scale(1.002)',
             },
             transition: 'all 0.2s ease',
             backgroundColor: open ? 'rgba(25, 118, 210, 0.12)' : 'inherit',
@@ -350,33 +366,80 @@ function CustomersPage() {
           <TableCell>{customer.first_name}</TableCell>
           <TableCell>{customer.last_name}</TableCell>
           <TableCell>{customer.email}</TableCell>
+          <TableCell align="right">
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEditClickOpen(customer);
+              }}
+              size="small"
+            >
+              <Edit />
+            </IconButton>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDeleteCustomer(customer.customer_id);
+              }}
+              size="small"
+            >
+              <Delete />
+            </IconButton>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(!open);
+              }}
+              size="small"
+            >
+              {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            </IconButton>
+          </TableCell>
         </TableRow>
         <TableRow>
-          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
             <Collapse in={open} timeout="auto" unmountOnExit>
-              <Box sx={{ margin: 1, display: 'flex', gap: 2 }}>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent row toggle
-                    handleEditClickOpen(customer);
-                  }}
-                  color="primary"
-                  variant="contained"
-                  size="small"
-                >
-                  Edit Customer
-                </Button>
-                <Button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent row toggle
-                    handleDeleteCustomer(customer.customer_id);
-                  }}
-                  color="secondary"
-                  variant="outlined"
-                  size="small"
-                >
-                  Delete Customer
-                </Button>
+              <Box sx={{ margin: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  Rental History
+                </Typography>
+                {isLoadingRentals ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : customerRentals?.length > 0 ? (
+                  <TableContainer component={Paper} sx={{ maxHeight: 300, mb: 2 }}>
+                    <Table size="small" stickyHeader>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Film Title</TableCell>
+                          <TableCell>Rental Date</TableCell>
+                          <TableCell>Return Date</TableCell>
+                          <TableCell>Status</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {customerRentals.map((rental) => (
+                          <TableRow key={rental.rental_id}>
+                            <TableCell>{rental.title}</TableCell>
+                            <TableCell>{formatDate(rental.rental_date)}</TableCell>
+                            <TableCell>{formatDate(rental.return_date)}</TableCell>
+                            <TableCell>
+                              <Typography 
+                                color={rental.return_date ? 'success.main' : 'warning.main'}
+                                sx={{ fontWeight: 'bold' }}
+                              >
+                                {rental.return_date ? 'Returned' : 'Active Rental'}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                ) : (
+                  <Typography color="text.secondary">No rental history found</Typography>
+                )}
               </Box>
             </Collapse>
           </TableCell>

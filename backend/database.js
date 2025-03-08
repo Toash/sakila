@@ -570,3 +570,28 @@ export async function getAvailableInventoryCount(film_id) {
 
   return rows[0];
 }
+
+export async function getCustomerRentals(customer_id) {
+  const [rows] = await pool.query(
+    `
+    SELECT 
+      film.film_id,
+      film.title,
+      rental.rental_date,
+      rental.return_date,
+      rental.rental_id
+    FROM 
+      rental
+    JOIN 
+      inventory ON rental.inventory_id = inventory.inventory_id
+    JOIN 
+      film ON inventory.film_id = film.film_id
+    WHERE 
+      rental.customer_id = ?
+    ORDER BY 
+      rental.rental_date DESC
+    `,
+    [customer_id]
+  );
+  return rows;
+}

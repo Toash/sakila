@@ -25,6 +25,7 @@ import {
   getAllFilms,
   getAvailableInventoryCount,
   rentFilm,
+  getCustomerRentals,
 } from "./database.js";
 import cors from "cors";
 const app = express();
@@ -217,6 +218,17 @@ app.put("/customers/:id", async (req, res) => {
       console.error('Error updating customer:', error);
       res.status(500).send('Error updating customer');
     }
+  }
+});
+
+app.get("/customers/:id/rentals", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const rentals = await getCustomerRentals(id);
+    res.send(rentals);
+  } catch (error) {
+    console.error('Error getting customer rentals:', error);
+    res.status(500).send('Error getting customer rentals');
   }
 });
 
