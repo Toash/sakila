@@ -361,6 +361,15 @@ export async function getCustomers() {
 
   return customers;
 }
+export async function getCustomer(id) {
+  const [rows] = await pool.query(
+    `
+    SELECT * FROM customer
+    WHERE customer_id = ?`,
+    [id]
+  );
+  return rows[0];
+}
 
 export async function fuzzySearchCustomerById(id) {
   const search = `%${id}%`;
@@ -413,4 +422,17 @@ export async function fuzzySearchCustomerByLastName(last) {
     [last, search]
   );
   return rows;
+}
+
+// customer id set to auto_increment
+// last_update is automatically set as well.
+export async function addCustomer(first_name, last_name, email) {
+  const [result] = await pool.query(
+    `
+        INSERT INTO customer (store_id, first_name, last_name, email,address_id, create_date)
+            VALUES (?,?,?,?,?,CURRENT_DATE())`,
+    [1, first_name, last_name, email, 1]
+  );
+  const id = result.insertId;
+  return getCustomer(id);
 }

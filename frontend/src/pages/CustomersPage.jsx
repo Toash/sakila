@@ -16,6 +16,12 @@ import {
   TableFooter,
   TablePagination,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 
@@ -39,6 +45,49 @@ function CustomersPage() {
   // entered search term
   const [submittedSearch, setSubmittedSearch] = useState("");
   const [searchBy, setSearchBy] = useState();
+
+  // add customer modal
+  const [open, setOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+  });
+
+  // snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleAddCustomer = async () => {
+    try {
+      await api.post("/customers", newCustomer);
+      setOpen(false);
+      setSnackbarMessage(
+        `Successfully added ${newCustomer.first_name} ${newCustomer.last_name}`
+      );
+      setSnackbarOpen(true);
+      setSubmittedSearch("");
+      setNewCustomer({
+        first_name: "",
+        last_name: "",
+        email: "",
+      });
+    } catch (error) {
+      console.error("Failed to add customer", error);
+    }
+  };
 
   // get the search and searchBy query params on page load.
   // update states from these query params
@@ -87,7 +136,7 @@ function CustomersPage() {
       endpoint = `/customers/last/${submittedSearch}`;
     }
 
-    // get all customers if no submitted search
+    // get all customers if no submittedSearch
     if (!submittedSearch) {
       endpoint = `/customers`;
     }
@@ -187,10 +236,10 @@ function CustomersPage() {
 
       {/* SEARCH */}
       <Box width="100%" id="search" display="flex" justifyContent={"center"}>
-        <Box width="80%" display="flex">
+        <Box width="80%" display="flex" flexWrap={"wrap"} gap=".5rem">
           <TextField
             label="Search"
-            sx={{ flex: "1" }}
+            sx={{ flex: "4 0 300px" }}
             value={search}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -201,7 +250,7 @@ function CustomersPage() {
               setSearch(e.target.value);
             }}
           ></TextField>
-          <FormControl sx={{ minWidth: "300px" }}>
+          <FormControl sx={{ flex: "1 0 200px" }}>
             <InputLabel labelId="option-label">Search By</InputLabel>
             <Select
               value={searchBy}
@@ -217,16 +266,78 @@ function CustomersPage() {
             </Select>
           </FormControl>
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={() => {
               setSubmittedSearch(search);
             }}
+            sx={{ flex: "1" }}
           >
             Search
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleClickOpen}
+            sx={{ flex: "1" }}
+          >
+            Add
           </Button>
         </Box>
       </Box>
       <CustomerTable></CustomerTable>
+
+      {/* Add Customer Modal */}
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Add Customer</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="First Name"
+            fullWidth
+            value={newCustomer.first_name}
+            onChange={(e) =>
+              setNewCustomer({ ...newCustomer, first_name: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            label="Last Name"
+            fullWidth
+            value={newCustomer.last_name}
+            onChange={(e) =>
+              setNewCustomer({ ...newCustomer, last_name: e.target.value })
+            }
+          />
+          <TextField
+            margin="dense"
+            label="Email"
+            fullWidth
+            value={newCustomer.email}
+            onChange={(e) =>
+              setNewCustomer({ ...newCustomer, email: e.target.value })
+            }
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleAddCustomer}>Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
